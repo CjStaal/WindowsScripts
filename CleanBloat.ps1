@@ -1,123 +1,151 @@
-﻿Function Remove-App([String]$AppName){
-    $PackageFullName = (Get-AppxPackage $AppName).PackageFullName
-    $ProPackageFullName = (Get-AppxProvisionedPackage -Online | where {$_.Displayname -eq $AppName}).PackageName
-    Remove-AppxPackage -package $PackageFullName | Out-Null
-    Remove-AppxProvisionedPackage -online -packagename $ProPackageFullName | Out-Null
-}
-
-Function Remove-App-Registry([String]$AppName)
+Function Remove-App-MSI-QN([String]$appName)
 {
-    $appcheck = Get-ChildItem -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall, HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {$_.DisplayName -eq $AppName } | Select-Object -Property DisplayName,UninstallString
-    if($appcheck -ne $null){
-        Write-Host $appcheck
-        $uninst = "$appcheck".split("=")[2].replace("}","")
-        $uninst ="`""+$uninst+"`"" + " /quiet"
-        Write-Host $uninst
+    $appCheck = Get-ChildItem -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall, HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {$_.DisplayName -eq $appName } | Select-Object -Property DisplayName,UninstallString
+    if($appCheck -ne $null){
+        Write-host "Uninstalling "$appCheck.DisplayName
+        $uninst = $appCheck.UninstallString + " /qn /norestart"
         cmd /c $uninst
     }
     else{
-        Write-Host "$id is not installed on this computer"
+        Write-Host "$appName is not installed on this computer"
     }
 }
 
-Function Remove-App-Registry2([String]$AppName)
+Function Remove-App-EXE-SILENT([String]$appName)
 {
-    $appcheck = Get-ChildItem -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall, HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {$_.DisplayName -eq $AppName } | Select-Object -Property DisplayName,UninstallString
-    if($appcheck -ne $null){
-        $uninst = "$appcheck ".split("=")[2].replace("}","") + " /VERYSILENT"
+    $appCheck = Get-ChildItem -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall, HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {$_.DisplayName -eq $appName } | Select-Object -Property DisplayName,UninstallString
+    if($appCheck -ne $null){
+        Write-host "Uninstalling "$appCheck.DisplayName
+        $uninst = $appCheck.UninstallString + " -silent"
         cmd /c $uninst
     }
     else{
-        Write-Host "$id is not installed on this computer"
+        Write-Host "$appName is not installed on this computer"
     }
 }
 
-Function Remove-App-Registry3([String]$AppName)
+Function Remove-App-MSI_EXE-Quiet([String]$appName)
 {
-    $appcheck = Get-ChildItem -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall, HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {$_.DisplayName -eq $AppName } | Select-Object -Property DisplayName,UninstallString
-    if($appcheck -ne $null){
-        $uninst = "$appcheck".split("=")[2]
-        $uninst = $uninst.Substring(0,$uninst.length-1) + " -silent"
-        Write-Host $uninst
+    $appCheck = Get-ChildItem -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall, HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {$_.DisplayName -eq $appName } | Select-Object -Property DisplayName,UninstallString
+    if($appCheck -ne $null){
+        Write-host "Uninstalling "$appCheck.DisplayName
+        $uninst = $appCheck.UninstallString[1] +  " /qn /restart"
+        cmd /c $uninst
+
+    }
+    else{
+        Write-Host "$appName is not installed on this computer"
+    }
+}
+Function Remove-App-MSI_EXE-S([String]$appName)
+{
+    $appCheck = Get-ChildItem -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall, HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {$_.DisplayName -eq $appName } | Select-Object -Property DisplayName,UninstallString
+    if($appCheck -ne $null){
+        Write-host "Uninstalling "$appCheck.DisplayName
+        $uninst = $appCheck.UninstallString[1] +  " /S"
+        cmd /c $uninst
+
+    }
+    else{
+        Write-Host "$appName is not installed on this computer"
+    }
+}
+
+Function Remove-App-MSI-I-QN([String]$appName)
+{
+    $appCheck = Get-ChildItem -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall, HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {$_.DisplayName -eq $appName } | Select-Object -Property DisplayName,UninstallString
+    if($appCheck -ne $null){
+        Write-host "Uninstalling "$appCheck.DisplayName
+        $uninst = $appCheck.UninstallString.Replace("/I","/X") + " /qn /norestart"
         cmd /c $uninst
     }
     else{
-        Write-Host "$id is not installed on this computer"
+        Write-Host "$appName is not installed on this computer"
     }
 }
 
-Function Remove-App-Registry4([String]$AppName)
+Function Remove-App([String]$appName){
+    $packageFullName = (Get-AppxPackage $appName).PackageFullName
+    if($packageFullName -ne $null){
+        $proPackageFullName = (Get-AppxProvisionedPackage -Online | where {$_.Displayname -eq $appName}).PackageName
+        Remove-AppxPackage -package $packageFullName | Out-Null
+        Remove-AppxProvisionedPackage -online -packagename $proPackageFullName | Out-Null
+    }
+}
+
+Function Remove-M365([String]$appName)
 {
-    $appcheck = Get-ChildItem -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall, HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {$_.DisplayName -eq $AppName } | Select-Object -Property DisplayName,UninstallString
-    if($appcheck -ne $null){
-        Write-Host $appcheck
-        $uninst = "$appcheck".split("=")[2].replace("}","")
-        $uninst ="`""+$uninst+"`"" + " /S"
-        Write-Host ""
-        Write-Host $uninst
+    $uninstall = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where {$_.DisplayName -like $appName} | Select UninstallString)
+    if($uninstall -ne $null){
+        Write-Host "Uninstalling "$appName
+        $uninstall = $uninstall.UninstallString + " DisplayLevel=False"
+        cmd /c $uninstall
+    }
+    else{
+        Write-Host "$appName is not installed on this computer"
+    }
+}
+
+Function Check-UninstallString([String]$appName)
+{
+    $appCheck = Get-ChildItem -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall, HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {$_.DisplayName -eq $appName } | Select-Object -Property DisplayName,UninstallString
+    if($appCheck -ne $null){
+        Write-host $appCheck.DisplayName $appCheck.UninstallString
+    }
+    else{
+        Write-Host "$appName is not installed on this computer"
+    }
+}
+
+Function Remove-App-EXE-S-QUOTES([String]$appName)
+{
+    $appCheck = Get-ChildItem -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall, HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {$_.DisplayName -eq $appName } | Select-Object -Property DisplayName,UninstallString
+    if($appCheck -ne $null){
+        Write-host "Uninstalling "$appCheck.DisplayName
+        $uninst ="`""+$appCheck.UninstallString+"`"" + " /S"
         cmd /c $uninst
     }
     else{
-        Write-Host "$id is not installed on this computer"
+        Write-Host "$appName is not installed on this computer"
     }
 }
 
-Function Remove-App-Registry5([String]$AppName)
-{
-    $appcheck = Get-ChildItem -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall, HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object {$_.DisplayName -eq $AppName } | Select-Object -Property DisplayName,UninstallString
-    if($appcheck -ne $null){
-
-        $uninst = $appcheck.UninstallString[1] + " /quiet"
-	cmd /c $uninst
-    }
-    else{
-        Write-Host "$id is not installed on this computer"
-    }
+Function Remove-Xbox{
+    Write-Host "Removing Xbox Packages"
+    Get-AppxPackage -allusers Microsoft.XboxGamingOverlay | Remove-AppxPackage
+    Get-AppxPackage -allusers -Name "*xbox*" | Remove-AppxPackage
+    Get-AppxProvisionedPackage -allusers -Name "*xbox*" | Remove-AppxProvisionedPackage
 }
 
-Function Remove-M365([String]$AppName)
-{
-    $Uninstall = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where {$_.DisplayName -like $appName} | Select UninstallString)
-    $Uninstall = $Uninstall.UninstallString + " DisplayLevel=False"
-    cmd /c $Uninstall
-}
-
-###########
-# EXECUTE #
-###########
-# Active identifiers
-Remove-App "Microsoft.GetHelp"							# MS support chat bot
-Remove-App "Microsoft.Getstarted"						# 'Get Started' link
-Remove-App "Microsoft.Messaging"						# SMS app. Requires a phone link.
-Remove-App "Microsoft.MicrosoftOfficeHub"				# Office 365. Interferes with Office ProPlus
-Remove-App "Microsoft.MicrosoftSolitaireCollection"		# Game
-Remove-App "Microsoft.OneConnect"						# Paid WiFi and Cellular App
-Remove-App "Microsoft.SkypeApp"							# Skype
-Remove-App "Microsoft.Wallet"							# Mobile payment storage
-Remove-App "microsoft.windowscommunicationsapps"		# MS Calendar and Mail apps. Interferes with Office ProPlus
-Remove-App "Microsoft.WindowsFeedbackHub"				# MS Beta test opt-in app
-Remove-App "Microsoft.YourPhone"						# Links an Android phone to the PC
-Remove-App "ZuneMusic"
-Remove-App "DellInc.DellDigitalDelivery"
-
-Remove-App-Registry "Dell SupportAssist Remediation"
-Remove-App-Registry "Dell Optimizer"
-Remove-App-Registry "Dell Trusted Device Agent"
-Remove-App-Registry "Dell SupportAssist"
-Remove-App-Registry "Dell Digital Delivery Services"
-Remove-App-Registry "Dell Digital Delivery"
-Remove-App-Registry "Xbox"
-Remove-App-Registry "Xbox Live"
-Remove-App-Registry2 "DELLOSD"
-Remove-App-Registry3 "Dell SupportAssist OS Recovery Plugin for Dell Update"
-Remove-App-Registry3 "Dell Optimizer Core"
-Remove-App-Registry4 "Dell Display Manager 2.1"
-Remove-App-Registry4 "Dell Peripheral Manager"
-Remove-App-Registry5 "Dell SupportAssist Remediation"
-
-Remove-M365 "Microsoft 365 - fr-fr"
-Remove-M365 "Microsoft 365 - es-es"
-Remove-M365 "Microsoft 365 - pt-br"
-Remove-M365 "Microsoft OneNote - fr-fr"
-Remove-M365 "Microsoft OneNote - es-es"
-Remove-M365 "Microsoft OneNote - pt-br"
+Remove-App-MSI-QN "Dell SupportAssist"                                             #working
+Remove-App-MSI-QN "Dell Digital Delivery Services"                                 #working
+Remove-App-EXE-SILENT "Dell Optimizer Core"                                        #working
+Remove-App-MSI_EXE-S "Dell SupportAssist OS Recovery Plugin for Dell Update"       #working
+Remove-App-MSI_EXE-S "Dell SupportAssist Remediation"                              #working
+Remove-App-EXE-S-QUOTES "Dell Display Manager 2.1"                                 #working
+Remove-App-EXE-S-QUOTES "Dell Peripheral Manager"                                  #working
+Remove-App-MSI-I-QN "Dell Core Services"                                           #working
+Remove-App-MSI-I-QN "Dell Trusted Device Agent"                                    #working
+Remove-App-MSI-I-QN "Dell Optimizer"                                               #working
+Remove-App "Microsoft.GamingApp"                                                   #working
+Remove-App "Microsoft.MicrosoftOfficeHub"                                          #working
+Remove-App "DellInc.DellDigitalDelivery"                                           #working 
+Remove-App "Microsoft.GetHelp"                                                     #working
+Remove-App "Microsoft.Getstarted"                                                  #working
+Remove-App "Microsoft.Messaging"                                                   #working
+Remove-App "Microsoft.MicrosoftSolitaireCollection"                                #working
+Remove-App "Microsoft.OneConnect"                                                  #working
+Remove-App "Microsoft.SkypeApp"                                                    #working
+Remove-App "Microsoft.Wallet"                                                      #working
+Remove-App "microsoft.windowscommunicationsapps"                                   #working
+Remove-App "Microsoft.WindowsFeedbackHub"                                          #working
+Remove-App "Microsoft.YourPhone"                                                   #working
+Remove-App "ZuneMusic"                                                             #working        
+Remove-M365 "Microsoft 365 - fr-fr"                                                #working
+Remove-M365 "Microsoft 365 - es-es"                                                #working                                            
+Remove-M365 "Microsoft 365 - pt-br"                                                #working
+Remove-M365 "Microsoft OneNote - fr-fr"                                            #working
+Remove-M365 "Microsoft OneNote - es-es"                                            #working
+Remove-M365 "Microsoft OneNote - pt-br"                                            #working
+Remove-Xbox                                                                        #working
+Check-UninstallString "DELLOSD"
