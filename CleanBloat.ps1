@@ -64,12 +64,22 @@ Function Remove-App-MSI-I-QN([String]$appName)
     }
 }
 
+
 Function Remove-App([String]$appName){
-    $packageFullName = (Get-AppxPackage $appName).PackageFullName
-    if($packageFullName -ne $null){
-        $proPackageFullName = (Get-AppxProvisionedPackage -Online | where {$_.Displayname -eq $appName}).PackageName
-        Remove-AppxPackage -package $packageFullName | Out-Null
-        Remove-AppxProvisionedPackage -online -packagename $proPackageFullName | Out-Null
+    $app = Get-AppxPackage -AllUsers $appName
+    if($app -ne $null){
+        $packageFullName = $app.PackageFullName
+        Write-Host "Uninstalling $appName"
+        Remove-AppxPackage -package $packageFullName -AllUsers
+        $provApp = Get-AppxProvisionedPackage -Online 
+        $proPackageFullName = (Get-AppxProvisionedPackage -Online | where {$_.Displayname -eq $appName}).DisplayName
+        if($proPackageFillName -ne $null){
+            Write-Host "Uninstalling provisioned $appName"
+            Remove-AppxProvisionedPackage -online -packagename $proPackageFullName -AllUsers
+        }
+    }
+    else{
+        Write-Host "$appName is not installed on this computer"
     }
 }
 
@@ -77,7 +87,7 @@ Function Remove-M365([String]$appName)
 {
     $uninstall = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where {$_.DisplayName -like $appName} | Select UninstallString)
     if($uninstall -ne $null){
-        Write-Host "Uninstalling "$appName
+        Write-Host "Uninstalling $appName"
         $uninstall = $uninstall.UninstallString + " DisplayLevel=False"
         cmd /c $uninstall
     }
@@ -110,13 +120,6 @@ Function Remove-App-EXE-S-QUOTES([String]$appName)
     }
 }
 
-Function Remove-Xbox{
-    Write-Host "Removing Xbox Packages"
-    Get-AppxPackage -allusers Microsoft.XboxGamingOverlay | Remove-AppxPackage
-    Get-AppxPackage -allusers -Name "*xbox*" | Remove-AppxPackage
-    Get-AppxProvisionedPackage -allusers -Name "*xbox*" | Remove-AppxProvisionedPackage
-}
-
 Remove-App-MSI-QN "Dell SupportAssist"                                             #working
 Remove-App-MSI-QN "Dell Digital Delivery Services"                                 #working
 Remove-App-EXE-SILENT "Dell Optimizer Core"                                        #working
@@ -147,5 +150,4 @@ Remove-M365 "Microsoft 365 - pt-br"                                             
 Remove-M365 "Microsoft OneNote - fr-fr"                                            #working
 Remove-M365 "Microsoft OneNote - es-es"                                            #working
 Remove-M365 "Microsoft OneNote - pt-br"                                            #working
-Remove-Xbox                                                                        #working
 Check-UninstallString "DELLOSD"
