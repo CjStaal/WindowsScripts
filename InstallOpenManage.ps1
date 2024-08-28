@@ -16,7 +16,7 @@ $filename = "OM-SrvAdmin-Dell-Web-WINX64-9.4.0-3787_A00.exe"
 <# Checks software #>
 Function Check-Software {
   Write-Verbose "Checking if software is installed"
-  if(Test-Path "C:\Program Files\Dell\DELL System Update"){
+  if(Test-Path "C:\Program Files\Dell\SysMgt\omsa"){
     Write-Verbose "Software is installed"
     Ninja-Property-Set openmanageInstalled $true
     return $true
