@@ -18,11 +18,11 @@ Function Check-Software {
   Write-Verbose "Checking if software is installed"
   if(Test-Path "C:\Program Files\Dell\DELL System Update"){
     Write-Verbose "Software is installed"
-    Ninja-Property-Set DSUInstalled $true
+    Ninja-Property-Set openmanageInstalled $true
     return $true
   } else {
     Write-Verbose "Software is not installed"
-    Ninja-Property-Set DSUInstalled $false
+    Ninja-Property-Set openmanageInstalled $false
     return $false
   }
 }
