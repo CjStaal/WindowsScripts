@@ -18,12 +18,20 @@ Function Check-Software {
   Write-Verbose "Checking if software is installed"
   if(Test-Path "C:\Program Files\Dell\DELL System Update"){
     Write-Verbose "Software is installed"
-    Ninja-Property-Set DSUInstalled $true
+    Ninja-Property-Set DSUInstalled "Installed"
     return $true
   } else {
-    Write-Verbose "Software is not installed"
-    Ninja-Property-Set DSUInstalled $false
-    return $false
+    if (((Get-WmiObject -Class Win32_bios).Manufacturer -Match "Dell") -and
+    ((Get-WmiObject -Class Win32_ComputerSystem).Model -notlike "*Virtual*") -and
+    ((Get-WmiObject -Class win32_OperatingSystem).Caption -Match "Server")){
+      Write-Verbose "Software is not installed"
+      Ninja-Property-Set DSUInstalled "Not Installed"
+      return $false
+    } else {
+      Write-Verbose "Software is not applicable"
+      Ninja-Property-Set DSUInstalled "Not Applicable"
+      return $true
+    }
   }
 }
 
@@ -31,11 +39,12 @@ Function Check-Software {
 Function Download-Software {
   Write-Verbose "Downloading Software"
   if(Test-Connection $repoHost -Count 3 -Quiet) {
+    if(Test-Path "$dlDir\$filename"){
+      taskkill /f /im $filename
+      Remove-Item "$dlDir\$filename" -ErrorAction SilentlyContinue
+    }
     try {
       New-Item -ItemType Directory "$dlDir" -Force | Out-Null
-      if(Test-Path $dlDir\$filename){
-        Remove-Item $dlDir\$filename
-      }
       (New-Object System.Net.WebClient).DownloadFile($dlURL, "$dlDir\$filename")
       Write-Verbose "Software downloaded!"
     } catch {
