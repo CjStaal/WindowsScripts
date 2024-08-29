@@ -4,7 +4,7 @@
   For MSI's that support /quiet
 #>
 
-$VerbosePreference = "Continue"
+##$VerbosePreference = "Continue"
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
 
 $repoHost = "dl.dell.com"
@@ -18,15 +18,22 @@ Function Check-Software {
   Write-Verbose "Checking if software is installed"
   if(Test-Path "C:\Program Files\Dell\SysMgt\omsa"){
     Write-Verbose "Software is installed"
-    Ninja-Property-Set openmanageInstalled $true
+    Ninja-Property-Set openmanageInstalled "Installed"
     return $true
   } else {
-    Write-Verbose "Software is not installed"
-    Ninja-Property-Set openmanageInstalled $false
-    return $false
+    if (((Get-WmiObject -Class Win32_bios).Manufacturer -Match "Dell") -and
+    ((Get-WmiObject -Class Win32_ComputerSystem).Model -notlike "*Virtual*") -and
+    ((Get-WmiObject -Class win32_OperatingSystem).Caption -Match "Server")){
+      Write-Verbose "Software is not installed"
+      Ninja-Property-Set openmanageInstalled "Not Installed"
+      return $false
+    } else {
+      Write-Verbose "Software is not applicable"
+      Ninja-Property-Set openmanageInstalled "Not Applicable"
+      return $true
+    }
   }
 }
-
 <# Downloads Software #>
 Function Download-Software {
   Write-Verbose "Downloading Software"
@@ -37,11 +44,16 @@ Function Download-Software {
     } else {
       $dlURL = "https://downloads.dell.com/FOLDER06019899M/1/OM-SrvAdmin-Dell-Web-WINX64-9.4.0-3787_A00.exe"
     }
+    if(Test-Path "$dlDir\$filename"){
+      taskkill /f /im $filename
+      Remove-Item "$dlDir\$filename" -ErrorAction SilentlyContinue
+    }
     try {
-      New-Item -ItemType Directory "$dlDir" -Force | Out-Null
-      if(Test-Path $dlDir\$filename){
-        Remove-Item $dlDir\$filename
+      if(Test-Path "$dlDir\$filename"){
+        Stop-Process -Name $filename -Force
+        Remove-Item "$dlDir\$filename"
       }
+      New-Item -ItemType Directory "$dlDir" -Force | Out-Null
       (New-Object System.Net.WebClient).DownloadFile($dlURL, "$dlDir\$filename")
       Write-Verbose "Software downloaded!"
     } catch {
