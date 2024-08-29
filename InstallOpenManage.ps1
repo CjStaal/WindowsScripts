@@ -10,7 +10,7 @@
 $repoHost = "dl.dell.com"
 $arguments = "/silent"
 $dlDir = "C:\HIT\Downloads"
-$dlURL = "https://dl.dell.com/FOLDER06019899M/1/OM-SrvAdmin-Dell-Web-WINX64-9.4.0-3787_A00.exe"
+$dlURL = "https://downloads.dell.com/FOLDER06019899M/1/OM-SrvAdmin-Dell-Web-WINX64-9.4.0-3787_A00.exe"
 $filename = "OM-SrvAdmin-Dell-Web-WINX64-9.4.0-3787_A00.exe"
 
 <# Checks software #>
