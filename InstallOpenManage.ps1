@@ -88,7 +88,7 @@ Function Cleanup-Software {
     Remove-Item "$dlDir\$filename"-ErrorAction Stop
     Write-Verbose "Installer deleted successfully"
   } catch {
-    Write-Verbose "Unable to delete installer. Please delete from C:\HIT\Downloads manually"
+    Write-Verbose "Unable to delete installer. Please delete from $dlDir manually"
   }
 }
 
